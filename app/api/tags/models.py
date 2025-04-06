@@ -8,3 +8,4 @@ class Tag(models.Model):
     
     class Meta:
         db_table = 'Tag'
+        ordering = ['id']

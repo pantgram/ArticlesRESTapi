@@ -15,3 +15,4 @@ class Article(models.Model):
    
      class Meta:
         db_table = 'Article'
+        ordering = ['id']
