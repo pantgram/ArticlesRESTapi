@@ -1,10 +1,10 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import AuthView, UserProfileView,UsersListView
+from .views import AuthView, UserProfileView,UsersListView,RetrieveUpdateDeleteUser
 
 urlpatterns = [
     # Token auth endpoint
-    path('auth/token', AuthView.as_view(), name='spotify_auth'),
+    path('auth/token', AuthView.as_view(), name='auth'),
     
     # JWT refresh endpoint
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -12,5 +12,7 @@ urlpatterns = [
     # User profile endpoint
     path('me/', UserProfileView.as_view(), name='user_profile'),
 
-    path('', UsersListView.as_view(), name='users'),
+    path('', UsersListView.as_view(), name='users_list'),
+
+    path('<int:user_id>/', RetrieveUpdateDeleteUser.as_view(), name='user_details'),
 ]

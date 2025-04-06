@@ -1,6 +1,6 @@
 from rest_framework import status, views,generics
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated,IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 from api.models import User
@@ -77,8 +77,17 @@ class UserProfileView(views.APIView):
 
 class UsersListView(generics.ListAPIView):
     """
-    View for retrieving aall users
+    View for retrieving all users
     """
+    permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend]  
     queryset = User.objects.all()
+
+class RetrieveUpdateDeleteUser(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated,IsAdminUser]
+    serializer_class = UserSerializer
+    queryset = User.objects.all().distinct()
+    lookup_url_kwarg = 'user_id'
+    filter_backends = [DjangoFilterBackend]  

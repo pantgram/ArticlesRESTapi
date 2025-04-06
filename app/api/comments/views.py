@@ -27,7 +27,7 @@ class CommentView(QueryParamValidationMixin,generics.ListCreateAPIView):
         
         serializer.save(author=self.request.user)
 
-class UpdateDeleteComment(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDeleteComment(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = CommentSerializer

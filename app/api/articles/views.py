@@ -1,5 +1,5 @@
 from rest_framework import generics,filters
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser,OR
 from .filters import ArticleFilter,ArticleCSVFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Article
@@ -39,7 +39,7 @@ class ArticleView(QueryParamValidationMixin,generics.ListCreateAPIView):
         authors_appended.append(self.request.user)
         serializer.save(authors=authors_appended)
     
-class UpdateDeleteArticle(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDeleteArticle(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = ArticleSerializer
@@ -53,14 +53,15 @@ class UpdateDeleteArticle(generics.RetrieveUpdateDestroyAPIView):
         """
         if self.request.method == 'PUT' or self.request.method == 'PATCH':
             # Only authors can update
-            return [IsAuthenticated(), IsAnAuthor()]
+            return [IsAuthenticated(), OR(IsAnAuthor(), IsAdminUser())]
         elif self.request.method == 'DELETE':
             # Only authors can delete
-            return [IsAuthenticated() , IsAnAuthor()]
+            return [IsAuthenticated() , OR(IsAnAuthor(), IsAdminUser())]
         # Default to the class-level permissions
         return super().get_permissions()
 
 class ArticleCSVView(QueryParamValidationMixin,generics.ListAPIView):
+    
     permission_classes = [IsAuthenticated]
     
     """

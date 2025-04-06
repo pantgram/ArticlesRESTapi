@@ -36,7 +36,7 @@ class TagView(QueryParamValidationMixin,generics.ListCreateAPIView):
         # Save article
         serializer.save()
 
-class UpdateDeleteTag(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDeleteTag(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated,IsAdminUser]
     serializer_class = TagSerializer
