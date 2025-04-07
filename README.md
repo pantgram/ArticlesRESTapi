@@ -19,11 +19,11 @@ git clone https://github.com/pantgram/ArticlesRESTapi.git
 cd ArticlesRESTapi
 
 # Create a virtual environment
-python -m venv "environment name"
+python -m venv env
 
 # Activate the virtual environment
 
-source "environment name"/bin/activate
+source env/bin/activate
 
 # Go to app directory
 cd app
@@ -258,3 +258,13 @@ Returns a list of all tags.
 
 - **GET**: Retrieves details for a specific tag
 - **PUT/DELETE**: Restricted to admin users only
+
+## Testing
+
+```bash
+
+# Run the unit tests
+python manage.py test
+
+
+```
