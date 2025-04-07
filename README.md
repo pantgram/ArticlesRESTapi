@@ -171,10 +171,38 @@ Returns a list of all articles.
 /api/Articles/?ordering=publication_date
 ```
 
+#### POST `/api/Articles/`
+
+Creates a new article.
+
+**Request Body Example:**
+
+```json
+{
+  "title": "Understanding REST APIs",
+  "abstract": "This article explores the principles of REST architecture and how to implement RESTful services.",
+  "authors": [1, 3],
+  "tags": [2, 5]
+}
+```
+
+**Note:** The `publication_date` field is automatically set to the current date and the `authors` list is automatically appended with the current user.
+
 #### GET, PUT, DELETE `/api/Articles/<article_id>/`
 
 - **GET**: Retrieves details for a specific article
 - **PUT/DELETE**: Restricted to admin users or the article's author
+
+**PUT Request Body Example:**
+
+```json
+{
+  "title": "Understanding REST APIs - Updated",
+  "abstract": "An updated exploration of REST architecture principles and implementation best practices.",
+  "authors": [1, 3, 4],
+  "tags": [2, 5, 7]
+}
+```
 
 #### GET `/api/Articles/export/csv/`
 
@@ -211,11 +239,11 @@ Returns a list of all comments.
 
 **Filter Parameters:**
 
-- `year`: Filter articles by publication year
-- `month`: Filter articles by publication month
-- `author`: Filter articles by author ID
-- `article`: Filter articles by article ID
-- `keyword`: Search articles by keyword
+- `year`: Filter comments by publication year
+- `month`: Filter comments by publication month
+- `author`: Filter comments by author ID
+- `article`: Filter comments by article ID
+- `keyword`: Search comments by keyword
 - `ordering`: Order results by specified field
 
 **Examples:**
@@ -229,21 +257,45 @@ Returns a list of all comments.
 /api/Comments/?ordering=publication_date
 ```
 
+#### POST `/api/Comments/`
+
+Creates a new comment.
+
+**Request Body Example:**
+
+```json
+{
+  "text": "This is a great article with valuable insights!",
+  "article": 5
+}
+```
+
+**Note:** The `author` field is automatically set to the current authenticated user and the `publication_date` is set to the current date.
+
 #### GET, PUT, DELETE `/api/Comments/<comment_id>/`
 
 - **GET**: Retrieves details for a specific comment
-- **PUT/DELETE**: Restricted to admin users or one of the article's author
+- **PUT/DELETE**: Restricted to admin users or the article's author
+
+**PUT Request Body Example:**
+
+```json
+{
+  "text": "This is an updated comment with additional thoughts after reading the article again.",
+  "article": 5
+}
+```
 
 ### Tags
 
-#### GET `/api/Articles/`
+#### GET `/api/Tags/`
 
 Returns a list of all tags.
 
 **Filter Parameters:**
 
-- `name`: Filter articles by name
-- `keyword`: Search articles by keyword
+- `name`: Filter tags by name
+- `keyword`: Search tags by keyword
 - `ordering`: Order results by specified field
 
 **Examples:**
@@ -254,10 +306,32 @@ Returns a list of all tags.
 /api/Tags/?ordering=name
 ```
 
+#### POST `/api/Tags/`
+
+Creates a new tag.
+
+**Request Body Example:**
+
+```json
+{
+  "name": "Python"
+}
+```
+
+**Note:** Tag names must be unique.
+
 #### GET, PUT, DELETE `/api/Tags/<tag_id>/`
 
 - **GET**: Retrieves details for a specific tag
 - **PUT/DELETE**: Restricted to admin users only
+
+**PUT Request Body Example:**
+
+```json
+{
+  "name": "Python Programming"
+}
+```
 
 ## Testing
 
@@ -265,6 +339,5 @@ Returns a list of all tags.
 
 # Run the unit tests
 python manage.py test
-
 
 ```
