@@ -182,7 +182,7 @@ Creates a new article.
   "title": "Understanding REST APIs",
   "abstract": "This article explores the principles of REST architecture and how to implement RESTful services.",
   "authors": [1, 3],
-  "tags": [2, 5]
+  "tags": ["Europe", "Tag 1"]
 }
 ```
 
@@ -200,7 +200,7 @@ Creates a new article.
   "title": "Understanding REST APIs - Updated",
   "abstract": "An updated exploration of REST architecture principles and implementation best practices.",
   "authors": [1, 3, 4],
-  "tags": [2, 5, 7]
+  "tags": ["Europe", "Tag 1", "Tag 2"]
 }
 ```
 
