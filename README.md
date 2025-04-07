@@ -204,6 +204,8 @@ Creates a new article.
 }
 ```
 
+**Note:** The `publication_date` is set to the current date.
+
 #### GET `/api/Articles/export/csv/`
 
 Exports all articles as a downloadable CSV file.
@@ -226,7 +228,6 @@ Exports all articles as a downloadable CSV file.
 /api/Articles/export/csv/?authors=1,2,3
 /api/Articles/export/csv/?tags=5,8
 /api/Articles/export/csv/?ids=4,5
-/api/Articles/export/csv/?ids=10,11,12
 /api/Articles/export/csv/?keyword=technology
 /api/Articles/export/csv/?ordering=publication_date
 ```
@@ -285,6 +286,8 @@ Creates a new comment.
   "article": 5
 }
 ```
+
+**Note:** The `publication_date` is set to the current date.
 
 ### Tags
 
