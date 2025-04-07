@@ -5,6 +5,8 @@ from api.models import User
 from api.tags.models import Tag
 from .models import Article
 from rest_framework_simplejwt.tokens import RefreshToken
+import csv
+import io
 
 class ArticleAPITestCase(APITestCase):
     def setUp(self):
@@ -200,3 +202,54 @@ class ArticleDetailsTest(ArticleAPITestCase):
         
         # Verify article still exists
         self.assertTrue(Article.objects.filter(id=self.article.id).exists())
+
+class ArticleDetailsTest(ArticleAPITestCase):
+    def test_get_article_details_authorized(self):
+        """Test retrieving article details with proper authorization"""
+        self.authenticate_author()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.article.id)
+    
+    def test_get_article_details_unauthorized(self):
+        """Test retrieving article details without authorization"""
+        self.clear_credentials()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class ArticleCSVViewTest(ArticleAPITestCase):
+    def test_authenticated_access(self):
+        """Test that authenticated users can access CSV endpoint"""
+        url = reverse('articles_csv')  # Added CSV view URL
+        self.authenticate_user()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+    def test_unauthenticated_access(self):
+        """Test that unauthenticated users are denied access"""
+        url = reverse('articles_csv')  # Added CSV view URL
+        self.clear_credentials()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_csv_content(self):
+        """Test CSV response structure and data"""
+
+        self.authenticate_user()
+        url = reverse('articles_csv')  # Added CSV view URL
+        response = self.client.get(url)
+        csv_file = io.StringIO(response.content.decode("utf-8"))
+        reader = csv.reader(csv_file)
+
+        # Validate headers
+        headers = next(reader)
+        expected_headers = ["ID", "title", "abstract", "authors", "tags", "publication_date"]
+        self.assertEqual(headers, expected_headers)
+
+        # Validate article data
+        row = next(reader)
+        self.assertEqual(row[1], "Test Article")
+        self.assertEqual(row[2], "This is a test abstract for the article")
+        self.assertEqual(row[3], "Author User")
+        self.assertEqual(row[4], "Test Tag")

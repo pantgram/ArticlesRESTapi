@@ -7,7 +7,7 @@ Ensure you have the following installed before setting up the API:
 - Python (>=3.13)
 - PostgreSQL (or your preferred database)
 
-### Installation
+## Installation
 
 Instructions on how to install the necessary dependencies and set up the project.
 
@@ -47,16 +47,16 @@ The .env file should be structured like this (for a PostgreSQL connection):
 
 In the settings.py file you can adjust the database settings for your preffered database.
 
-DATABASES = {
-'default': {
-'ENGINE': 'django.db.backends.postgresql',
-'NAME': os.environ.get('DB_NAME'),
-'USER': os.environ.get('DB_USER'),
-'PASSWORD': os.environ.get('DB_PASSWORD'),
-'HOST': os.environ.get('DB_HOST'),
-'PORT': os.environ.get('DB_PORT'),
-}
-}
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        }
+    }
 
 Ensure that the database server is running
 
@@ -151,19 +151,108 @@ Returns a list of all users.
 
 Returns a list of all articles.
 
+**Filter Parameters:**
+
+- `year`: Filter articles by publication year
+- `month`: Filter articles by publication month
+- `authors`: Filter articles by author IDs
+- `tags`: Filter articles by tag IDs
+- `keyword`: Search articles by keyword
+- `ordering`: Order results by specified field
+
+**Examples:**
+
+```
+/api/Articles/?year=2025
+/api/Articles/?month=4&year=2024
+/api/Articles/?authors=1,2,3
+/api/Articles/?tags=5,8
+/api/Articles/?keyword=technology
+/api/Articles/?ordering=publication_date
+```
+
 #### GET, PUT, DELETE `/api/Articles/<article_id>/`
 
 - **GET**: Retrieves details for a specific article
 - **PUT/DELETE**: Restricted to admin users or the article's author
 
+#### GET `/api/Articles/export/csv/`
+
+Exports all articles as a downloadable CSV file.
+
+**Filter Parameters:**
+
+- `year`: Filter articles by publication year
+- `month`: Filter articles by publication month
+- `authors`: Filter articles by author IDs
+- `tags`: Filter articles by tag IDs
+- `ids`: Filter articles by article IDs
+- `keyword`: Search articles by keyword
+- `ordering`: Order results by specified field
+
+**Examples:**
+
+```
+/api/Articles/export/csv/?year=2025
+/api/Articles/export/csv/?month=4&year=2024
+/api/Articles/export/csv/?authors=1,2,3
+/api/Articles/export/csv/?tags=5,8
+/api/Articles/export/csv/?ids=4,5
+/api/Articles/export/csv/?ids=10,11,12
+/api/Articles/export/csv/?keyword=technology
+/api/Articles/export/csv/?ordering=publication_date
+```
+
 ### Comments
+
+#### GET `/api/Comments/`
+
+Returns a list of all comments.
+
+**Filter Parameters:**
+
+- `year`: Filter articles by publication year
+- `month`: Filter articles by publication month
+- `author`: Filter articles by author ID
+- `article`: Filter articles by article ID
+- `keyword`: Search articles by keyword
+- `ordering`: Order results by specified field
+
+**Examples:**
+
+```
+/api/Comments/?year=2025
+/api/Comments/?month=4&year=2024
+/api/Comments/?author=1
+/api/Comments/?article=5
+/api/Comments/?keyword=technology
+/api/Comments/?ordering=publication_date
+```
 
 #### GET, PUT, DELETE `/api/Comments/<comment_id>/`
 
 - **GET**: Retrieves details for a specific comment
-- **PUT/DELETE**: Restricted to admin users or the article's author
+- **PUT/DELETE**: Restricted to admin users or one of the article's author
 
 ### Tags
+
+#### GET `/api/Articles/`
+
+Returns a list of all tags.
+
+**Filter Parameters:**
+
+- `name`: Filter articles by name
+- `keyword`: Search articles by keyword
+- `ordering`: Order results by specified field
+
+**Examples:**
+
+```
+/api/Tags/?name=Europe
+/api/Tags/?keyword=technology
+/api/Tags/?ordering=name
+```
 
 #### GET, PUT, DELETE `/api/Tags/<tag_id>/`
 
