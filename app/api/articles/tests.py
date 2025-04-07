@@ -1,138 +1,202 @@
-from rest_framework.test import APITestCase,APIClient
 from django.urls import reverse
-from .models import Article
-from api.tags.models import Tag
-from api.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+from rest_framework.test import APITestCase
+from api.models import User
+from api.tags.models import Tag
+from .models import Article
+from rest_framework_simplejwt.tokens import RefreshToken
 
-
-class ArticleTestCase(APITestCase):
+class ArticleAPITestCase(APITestCase):
     def setUp(self):
-        self.user_author = User.objects.create_user(email="testAuthor01@gmail.com", first_name="Test", last_name= "User01", password="TestPassword10!")
-        self.user = User.objects.create_user(email="test02@gmail.com", first_name="Test", last_name= "User02", password="TestPassword20!")
-        self.tag = Tag.objects.create(name="Test Tag")
-        self.article = Article.objects.create(
-            abstract="Test Paragraph",
-            title="Test Title"
+        # Create a user who is an author
+        self.author = User.objects.create_user(
+            email='author@example.com',
+            first_name='Author',
+            last_name='User',
+            password='authorpassword123'
         )
         
-        self.article.authors.set([self.user_author])
+        # Create a regular user (non-author)
+        self.user = User.objects.create_user(
+            email='user@example.com',
+            first_name='Regular',
+            last_name='User',
+            password='userpassword123'
+        )
+        
+        # Create a test tag
+        self.tag = Tag.objects.create(name="Test Tag")
+        
+        # Create a test article
+        self.article = Article.objects.create(
+            title="Test Article",
+            abstract="This is a test abstract for the article"
+        )
+        
+        # Set authors and tags
+        self.article.authors.set([self.author])
         self.article.tags.set([self.tag])
-        self.url =reverse('article_details', kwargs={'article_id':self.article.id})
-        refresh_user_author = RefreshToken.for_user(self.user_author)
-        self.token_author = refresh_user_author.access_token
-        refresh_user = RefreshToken.for_user(self.user)
-        self.token_user= refresh_user.access_token
-
-   
+        
+        # Get tokens for authentication
+        self.author_refresh = RefreshToken.for_user(self.author)
+        self.author_access = str(self.author_refresh.access_token)
+        
+        self.user_refresh = RefreshToken.for_user(self.user)
+        self.user_access = str(self.user_refresh.access_token)
+        
+        # URL for article details
+        self.url = reverse('article_details', kwargs={'article_id': self.article.id})
     
+    def authenticate_author(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.author_access}')
+    
+    def authenticate_user(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_access}')
+    
+    def clear_credentials(self):
+        self.client.credentials()
+
+class ArticlesListViewTest(ArticleAPITestCase):
+    def test_create_article(self):
+        """
+        Test creating a new article
+        """
+        url = reverse('articles_list')
+        self.authenticate_author()
+        
+        new_article_data = {
+            'title': 'New Test Article',
+            'abstract': 'This is an abstract for the new test article',
+            'authors': [self.author.id],
+            'tags': [self.tag.name]
+        }
+        
+        response = self.client.post(url, new_article_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify the article was created in the database
+        self.assertTrue(Article.objects.filter(title='New Test Article').exists())
+        
+        # Check the returned data matches what we sent
+        self.assertEqual(response.data['title'], 'New Test Article')
+        self.assertEqual(response.data['abstract'], 'This is an abstract for the new test article')
+        
+    def test_list_articles(self):
+        """
+        Test retrieving list of articles
+        """
+        url = reverse('articles_list')
+        self.authenticate_user()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 2)  # Should see at least two article
+
+class ArticleDetailsTest(ArticleAPITestCase):
     def test_get_article_details_authorized(self):
         """
         Test retrieving article details with proper authorization
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token_author}')
+        self.authenticate_author()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.article.id, response.data['id'])
+        self.assertEqual(response.data['id'], self.article.id)
+        self.assertEqual(response.data['title'], self.article.title)
     
     def test_get_article_details_unauthorized(self):
         """
         Test retrieving article details without authorization
         """
         # No credentials provided
+        self.clear_credentials()
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)  # Expecting Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
-    def test_put_article_authorized(self):
+    def test_update_article_as_author(self):
         """
-        Test updating article with proper authorization
+        Test updating article as an author
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token_author}')
+        self.authenticate_author()
         updated_data = {
-        'title': 'Updated Title',
-        'abstract': 'Updated abstract text',
-        'authors': [self.user_author.id], 
-        'tags': [self.tag.name]     
-    }
+            'title': 'Updated Title',
+            'abstract': 'Updated abstract text',
+            'authors': [self.author.id],
+            'tags': [self.tag.name]
+        }
         response = self.client.put(self.url, updated_data, format='json')
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-           print(f"Error response: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # Refresh from database to get updated values
+        # Refresh article from database
         self.article.refresh_from_db()
         self.assertEqual(self.article.title, 'Updated Title')
         self.assertEqual(self.article.abstract, 'Updated abstract text')
     
-    def test_put_article_unauthorized(self):
+    def test_update_article_unauthorized(self):
         """
         Test updating article without authorization
         """
         # No credentials provided
+        self.clear_credentials()
         updated_data = {
-        'title': 'Updated Title',
-        'abstract': 'Updated abstract text',
-        'authors': [self.user_author.id], 
-        'tags': [self.tag.name]     
-    }
+            'title': 'Updated Title',
+            'abstract': 'Updated abstract text',
+            'authors': [self.author.id],
+            'tags': [self.tag.name]
+        }
         response = self.client.put(self.url, updated_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)  # Expecting Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         
         # Verify article was not changed
         self.article.refresh_from_db()
-        self.assertEqual(self.article.title, 'Test Title')
-
-    def test_put_article_not_allowed(self):
+        self.assertEqual(self.article.title, 'Test Article')
+    
+    def test_update_article_as_non_author(self):
         """
-        Test updating article that user in not an author
+        Test updating article as a non-author user
         """
-        
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token_user}')
+        self.authenticate_user()
         updated_data = {
-        'title': 'Updated Title',
-        'abstract': 'Updated abstract text',
-        'authors': [self.user_author.id], 
-        'tags': [self.tag.name]     
-    }
+            'title': 'Updated Title',
+            'abstract': 'Updated abstract text',
+            'authors': [self.author.id],
+            'tags': [self.tag.name]
+        }
         response = self.client.put(self.url, updated_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) # Not allowed
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
+        # Verify article was not changed
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.title, 'Test Article')
     
-    
-    def test_delete_article_authorized(self):
+    def test_delete_article_as_author(self):
         """
-        Test deleting article with proper authorization
+        Test deleting article as an author
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token_author}')
+        self.authenticate_author()
         response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)  # No Content on successful deletion
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         
         # Verify article was deleted
-        with self.assertRaises(Article.DoesNotExist):
-            Article.objects.get(id=self.article.id)
+        self.assertFalse(Article.objects.filter(id=self.article.id).exists())
     
     def test_delete_article_unauthorized(self):
         """
         Test deleting article without authorization
         """
         # No credentials provided
+        self.clear_credentials()
         response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, 401)  # Expecting Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         
         # Verify article still exists
-        article_exists = Article.objects.filter(id=self.article.id).exists()
-        self.assertTrue(article_exists)
-
-    def test_delete_article_not_allowed(self):
-        """
-        Test deleting article with proper authorization
-        """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token_user}')
-        response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  # Not allowed
-        
-        # Verify article still exists
-        article_exists = Article.objects.filter(id=self.article.id).exists()
-        self.assertTrue(article_exists)
+        self.assertTrue(Article.objects.filter(id=self.article.id).exists())
     
+    def test_delete_article_as_non_author(self):
+        """
+        Test deleting article as a non-author user
+        """
+        self.authenticate_user()
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Verify article still exists
+        self.assertTrue(Article.objects.filter(id=self.article.id).exists())
