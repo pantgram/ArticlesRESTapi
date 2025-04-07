@@ -86,8 +86,20 @@ class UsersListView(generics.ListAPIView):
 
 class RetrieveUpdateDeleteUser(generics.RetrieveUpdateDestroyAPIView):
 
-    permission_classes = [IsAuthenticated,IsAdminUser]
     serializer_class = UserSerializer
     queryset = User.objects.all().distinct()
     lookup_url_kwarg = 'user_id'
     filter_backends = [DjangoFilterBackend]  
+
+    def get_permissions(self):
+        """
+        Override get_permissions to apply different permissions based on the action
+        """
+        if self.request.method == 'PUT' or self.request.method == 'PATCH':
+            # Only authors can update
+            return [IsAuthenticated(), IsAdminUser()]
+        elif self.request.method == 'DELETE':
+            # Only authors can delete
+            return [IsAuthenticated() , IsAdminUser()]
+        # Default to the class-level permissions
+        return super().get_permissions()

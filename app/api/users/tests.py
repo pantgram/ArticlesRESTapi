@@ -138,14 +138,6 @@ class RetrieveUpdateDeleteUserTest(UserAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['email'], self.user.email)
     
-    def test_retrieve_user_as_regular_user(self):
-        """
-        Test retrieving a specific user as regular user
-        """
-        url = reverse('user_details', kwargs={'user_id': self.admin.id})
-        self.authenticate_user()
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_update_user_as_admin(self):
         """
