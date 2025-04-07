@@ -1,0 +1,83 @@
+[
+  {
+    "model": "api.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$iMkQ1TSP9Bt4UlGAUmjB2r$L49KYZvXKpsIWl/6ZlQHKWYvYPgGH2q9BeYsmgxl1ZE=",
+      "last_login": "2025-04-06T14:15:58Z",
+      "email": "testuser01@gmail.com",
+      "first_name": "Test",
+      "last_name": "User",
+      "date_joined": "2025-04-06T14:15:38Z",
+      "is_superuser": false,
+      "is_admin": false
+    }
+  },
+  {
+    "model": "api.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$D7Aa4QJsqZ4yjnFoXZRsC8$vLxmXFLwZQU0kLzmxMRONYDEz8T9glRVULk7RCIKJKw=",
+      "last_login": "2025-04-07T12:44:45.348Z",
+      "email": "testadmin01@gmail.com",
+      "first_name": "Test",
+      "last_name": "Admin",
+      "date_joined": "2025-04-07T12:42:20.762Z",
+      "is_superuser": true,
+      "is_admin": true
+    }
+  },
+  {
+    "model": "articles.article",
+    "pk": 1,
+    "fields": {
+      "publication_date": "2025-04-07",
+      "abstract": "This is a Test Article 1.",
+      "title": "Test Article 1",
+      "authors": [1],
+      "tags": [1]
+    }
+  },
+  {
+    "model": "articles.article",
+    "pk": 2,
+    "fields": {
+      "publication_date": "2025-04-07",
+      "abstract": "This is a Test Article 2",
+      "title": "Test Article 2",
+      "authors": [2],
+      "tags": [2, 3]
+    }
+  },
+  {
+    "model": "comments.comment",
+    "pk": 1,
+    "fields": {
+      "publication_date": "2025-04-07",
+      "author": 2,
+      "text": "Nice Article!",
+      "article": 1
+    }
+  },
+  {
+    "model": "tags.tag",
+    "pk": 1,
+    "fields": {
+      "name": "Test 1 Tag"
+    }
+  },
+  {
+    "model": "tags.tag",
+    "pk": 2,
+    "fields": {
+      "name": "Test 2 Tag"
+    }
+  },
+  {
+    "model": "tags.tag",
+    "pk": 3,
+    "fields": {
+      "name": "Test 3 Tag"
+    }
+  }
+]
