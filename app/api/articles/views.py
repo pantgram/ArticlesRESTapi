@@ -1,4 +1,5 @@
 from rest_framework import generics,filters
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,OR
 from .filters import ArticleFilter,ArticleCSVFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -6,6 +7,7 @@ from .models import Article
 from django.http import HttpResponse
 from api.tags.models import Tag
 from .serializers import ArticleSerializer
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from api.custom_permissions import IsAnAuthor
 from api.query_parameters_mixin import QueryParamValidationMixin
 import csv
@@ -23,11 +25,33 @@ class ArticleView(QueryParamValidationMixin,generics.ListCreateAPIView):
     """
     queryset = Article.objects.all().distinct() # avoid duplicates
     serializer_class = ArticleSerializer 
-    filter_backends = [DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter]  # Enable filtering and searching
-    search_fields = ['abstract', 'title'] # keyword search specific fields
+    filter_backends = [DjangoFilterBackend,filters.OrderingFilter]  # Enable filtering and searching
     ordering_fields = '__all__'
     filterset_class = ArticleFilter  # Use our custom filter
-
+    
+    def get_queryset(self):
+        """
+        Override get_queryset to apply filters first, then search
+        """
+        # Get the base queryset which will be filtered by our custom filters
+        queryset = super().get_queryset()
+        
+        # Get the keyword query parameter
+        search_query = self.request.query_params.get('keyword', None)
+        
+        # If there's a keyword term, apply the search after filtering
+        if search_query:
+            vector = SearchVector('abstract', 'title')
+            print(vector)
+            
+            query = SearchQuery(search_query)
+            print(query)
+            queryset = queryset.annotate(
+                rank=SearchRank(vector, query)
+            ).filter(rank__gt=0).order_by("-rank")
+        
+        return queryset
+    
     def perform_create(self, serializer):
         """
     Perform create to the serializer
