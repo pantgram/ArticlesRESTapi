@@ -4,7 +4,7 @@
 
 Ensure you have the following installed before setting up the API:
 
-- Python (>=3.13)
+- Python (>=3.10)
 - PostgreSQL (or your preferred database)
 
 ## Installation
@@ -80,9 +80,43 @@ The server now runs at `127.0.0.1:8000/`.
 
 ## Authentication
 
-### POST `/api/Users/auth/token`
+### POST `/api/users/auth/token/register`
 
-Creates a new user and retrieves authorization tokens, or authenticates an existing user.
+Creates a new user and retrieves authorization tokens
+
+**Request Body:**
+
+```json
+{
+  "email": "test01@gmail.com",
+  "first_name": "TEST",
+  "last_name": "user",
+  "password": "TestPass10!"
+}
+```
+
+**Successful Response:**
+
+```json
+{
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Note:** The access token must be included in subsequent requests as a Bearer token in the Authorization header.
+
+**Error Response:**
+
+```json
+{
+  "error": "User with the same email already exists"
+}
+```
+
+### POST `/api/users/auth/token/login`
+
+Authenticates an existing user.
 
 **Request Body:**
 
@@ -114,7 +148,7 @@ Creates a new user and retrieves authorization tokens, or authenticates an exist
 }
 ```
 
-### POST `/api/Users/auth/token/refresh`
+### POST `/api/users/auth/token/refresh`
 
 Obtains a new token pair using a refresh token.
 
@@ -130,15 +164,15 @@ Obtains a new token pair using a refresh token.
 
 ## User Endpoints
 
-### GET `/api/Users/me`
+### GET `/api/users/me`
 
 Returns details of the currently authenticated user.
 
-### GET `/api/Users/`
+### GET `/api/users/`
 
 Returns a list of all users.
 
-### GET, PUT, DELETE `/api/Users/<user_id>/`
+### GET, PUT, DELETE `/api/users/<user_id>/`
 
 - **GET**: Retrieves details for a specific user
 - **PUT/DELETE**: Restricted to admin users only
@@ -147,7 +181,7 @@ Returns a list of all users.
 
 ### Articles
 
-#### GET `/api/Articles/`
+#### GET `/api/articles/`
 
 Returns a list of all articles.
 
@@ -163,15 +197,15 @@ Returns a list of all articles.
 **Examples:**
 
 ```
-/api/Articles/?year=2025
-/api/Articles/?month=4&year=2024
-/api/Articles/?authors=1,2,3
-/api/Articles/?tags=5,8
-/api/Articles/?keyword=technology
-/api/Articles/?ordering=publication_date
+/api/articles/?year=2025
+/api/articles/?month=4&year=2024
+/api/articles/?authors=1,2,3
+/api/articles/?tags=5,8
+/api/articles/?keyword=technology
+/api/articles/?ordering=publication_date
 ```
 
-#### POST `/api/Articles/`
+#### POST `/api/articles/`
 
 Creates a new article.
 
@@ -188,7 +222,7 @@ Creates a new article.
 
 **Note:** The `publication_date` field is automatically set to the current date and the `authors` list is automatically appended with the current user.
 
-#### GET, PUT, DELETE `/api/Articles/<article_id>/`
+#### GET, PUT, DELETE `/api/articles/<article_id>/`
 
 - **GET**: Retrieves details for a specific article
 - **PUT/DELETE**: Restricted to admin users or the article's author
@@ -206,7 +240,7 @@ Creates a new article.
 
 **Note:** The `publication_date` is set to the current date.
 
-#### GET `/api/Articles/export/csv/`
+#### GET `/api/articles/export/csv/`
 
 Exports all articles as a downloadable CSV file.
 
@@ -223,18 +257,18 @@ Exports all articles as a downloadable CSV file.
 **Examples:**
 
 ```
-/api/Articles/export/csv/?year=2025
-/api/Articles/export/csv/?month=4&year=2024
-/api/Articles/export/csv/?authors=1,2,3
-/api/Articles/export/csv/?tags=5,8
-/api/Articles/export/csv/?ids=4,5
-/api/Articles/export/csv/?keyword=technology
-/api/Articles/export/csv/?ordering=publication_date
+/api/articles/export/csv/?year=2025
+/api/articles/export/csv/?month=4&year=2024
+/api/articles/export/csv/?authors=1,2,3
+/api/articles/export/csv/?tags=5,8
+/api/articles/export/csv/?ids=4,5
+/api/articles/export/csv/?keyword=technology
+/api/articles/export/csv/?ordering=publication_date
 ```
 
 ### Comments
 
-#### GET `/api/Comments/`
+#### GET `/api/comments/`
 
 Returns a list of all comments.
 
@@ -250,15 +284,15 @@ Returns a list of all comments.
 **Examples:**
 
 ```
-/api/Comments/?year=2025
-/api/Comments/?month=4&year=2024
-/api/Comments/?author=1
-/api/Comments/?article=5
-/api/Comments/?keyword=technology
-/api/Comments/?ordering=publication_date
+/api/comments/?year=2025
+/api/comments/?month=4&year=2024
+/api/comments/?author=1
+/api/comments/?article=5
+/api/comments/?keyword=technology
+/api/comments/?ordering=publication_date
 ```
 
-#### POST `/api/Comments/`
+#### POST `/api/comments/`
 
 Creates a new comment.
 
@@ -273,7 +307,7 @@ Creates a new comment.
 
 **Note:** The `author` field is automatically set to the current authenticated user and the `publication_date` is set to the current date.
 
-#### GET, PUT, DELETE `/api/Comments/<comment_id>/`
+#### GET, PUT, DELETE `/api/comments/<comment_id>/`
 
 - **GET**: Retrieves details for a specific comment
 - **PUT/DELETE**: Restricted to admin users or the article's author
@@ -291,7 +325,7 @@ Creates a new comment.
 
 ### Tags
 
-#### GET `/api/Tags/`
+#### GET `/api/tags/`
 
 Returns a list of all tags.
 
@@ -304,12 +338,12 @@ Returns a list of all tags.
 **Examples:**
 
 ```
-/api/Tags/?name=Europe
-/api/Tags/?keyword=technology
-/api/Tags/?ordering=name
+/api/tags/?name=Europe
+/api/tags/?keyword=technology
+/api/tags/?ordering=name
 ```
 
-#### POST `/api/Tags/`
+#### POST `/api/tags/`
 
 Creates a new tag.
 
@@ -323,7 +357,7 @@ Creates a new tag.
 
 **Note:** Tag names must be unique.
 
-#### GET, PUT, DELETE `/api/Tags/<tag_id>/`
+#### GET, PUT, DELETE `/api/tags/<tag_id>/`
 
 - **GET**: Retrieves details for a specific tag
 - **PUT/DELETE**: Restricted to admin users only
