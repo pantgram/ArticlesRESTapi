@@ -1,9 +1,9 @@
 from django.urls import include,path
 
 urlpatterns = [
-    path('Users/',include("api.users.urls")),
-    path('Articles/',include("api.articles.urls")),
-    path('Comments/',include("api.comments.urls")),
-    path('Tags/',include("api.tags.urls")),
+    path('users/',include("api.users.urls")),
+    path('articles/',include("api.articles.urls")),
+    path('comments/',include("api.comments.urls")),
+    path('tags/',include("api.tags.urls")),
     
 ]

@@ -6,9 +6,51 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.models import User
 from api.serializers import UserSerializer
 
-class AuthView(views.APIView):
+class RegisterView(views.APIView):
     """
     Handles user creation
+    """
+    # doesn't need authentication to access this endpoint
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+    
+        
+        # Create or update user
+        try:
+            data = request.data
+            # Check if user already exists
+            user_exists = User.objects.filter(email=data['email']).exists()
+            if user_exists:
+                return Response(
+                {"error": " User with the same email already exists"}, 
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            else:
+            # Create new user
+                user = User.objects.create_user(
+                data['email'],
+                data['first_name'],
+                data['last_name'],
+                data['password']
+            )
+                
+            # Generate JWT tokens
+                refresh = RefreshToken.for_user(user)
+            # return them to user
+                return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+            
+        except Exception as e:
+            return Response({"error": f"User creation failed: {str(e)}"}, 
+                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+class LoginView(views.APIView):
+    """
+    Handles user login
     """
     # doesn't need authentication to access this endpoint
     permission_classes = [AllowAny]
@@ -36,33 +78,14 @@ class AuthView(views.APIView):
                     return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
-                    })
-            else:
-            # Create new user
-                user = User.objects.create_user(
-                data['email'],
-                data['first_name'],
-                data['last_name'],
-                data['password']
-            )
-                
-            # Generate JWT tokens
-                refresh = RefreshToken.for_user(user)
-            # return them to the user
-                return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-            
+                    })    
         except Exception as e:
-            return Response({"error": f"User creation failed: {str(e)}"}, 
+            return Response({"error": f"User login failed: {str(e)}"}, 
                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    
 
 class UserProfileView(views.APIView):
     """
-    View for retrieving and updating the authenticated user's profile
+    View for retrieving the authenticated user's profile
     """
     
     permission_classes = [IsAuthenticated]
